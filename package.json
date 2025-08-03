@@ -1,0 +1,8 @@
+{
+  "name": "camp-query",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "cloudscraper": "^6.1.0"
+  }
+}
