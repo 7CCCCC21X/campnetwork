@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "cloudscraper": "^4.8.3"
+    "cloudscraper": "4.6.2"
   }
 }
