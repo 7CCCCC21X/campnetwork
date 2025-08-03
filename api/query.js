@@ -1,15 +1,27 @@
 import cloudscraper from 'cloudscraper';
 
-/* 单例：cold-start 创建，后续复用同一 cf_clearance */
+/* ---------- 单例 ---------- */
 let scraper = null;
 function getScraper () {
   if (scraper) return scraper;
-  scraper = cloudscraper.createScraper({
-    browser: { browser: 'chrome', platform: 'windows', desktop: true }
-  });
+
+  /* v4.5+ 有 createScraper；老版 / 移除则用 defaults */
+  if (typeof cloudscraper.createScraper === 'function') {
+    scraper = cloudscraper.createScraper({
+      browser: { browser: 'chrome', platform: 'windows', desktop: true }
+    });
+  } else if (typeof cloudscraper.defaults === 'function') {
+    scraper = cloudscraper.defaults({
+      browser: { browser: 'chrome', platform: 'windows', desktop: true }
+    });
+  } else {
+    // 最保底：直接用原函数（每次新挑战，不复用 cookie）
+    scraper = cloudscraper;
+  }
   return scraper;
 }
 
+/* ---------- API 入口 ---------- */
 export default async function handler (req, res) {
   const { address } = req.query;
   if (!address) return res.status(400).json({ error: 'missing address' });
@@ -21,7 +33,8 @@ export default async function handler (req, res) {
     const json = JSON.parse(raw);
     res.status(200).json(json);
   } catch (err) {
-    scraper = null;                       // 失效时重建
+    /* Cookie 失效或 CF 阻挡：下次重新生成实例 */
+    scraper = null;
     res.status(502).json({ error: 'upstream failed', detail: err.message });
   }
 }
